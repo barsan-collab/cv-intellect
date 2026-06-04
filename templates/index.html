@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI CV Intellect Hub</title>
+    <style>
+        * { box-sizing: border-box; transition: all 0.3s ease; }
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: radial-gradient(circle at center, #020617 0%, #090d16 100%); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; color: #f8fafc; }
+        .main-container { width: 100%; max-width: 550px; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.06); border-radius: 24px; padding: 40px 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); text-align: center; }
+        h1 { font-size: 32px; background: linear-gradient(to right, #10b981, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin: 0 0 10px 0; font-weight: 800; }
+        p.subtitle { color: #64748b; font-size: 15px; margin-bottom: 30px; }
+        .drop-zone { border: 2px dashed #334155; border-radius: 16px; padding: 40px 20px; background: #090d16; cursor: pointer; position: relative; margin-bottom: 25px; }
+        .drop-zone:hover, .drop-zone.dragover { border-color: #10b981; background: rgba(16, 185, 129, 0.03); }
+        .drop-zone input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .drop-text { font-size: 16px; color: #cbd5e1; font-weight: 500; }
+        .file-badge { display: none; margin-bottom: 20px; background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; padding: 12px; border-radius: 8px; color: #34d399; font-size: 14px; justify-content: space-between; align-items: center; }
+        .btn-submit { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; border: none; padding: 16px; font-size: 16px; border-radius: 12px; cursor: pointer; width: 100%; font-weight: 700; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3); margin-bottom: 15px; }
+        .btn-submit:hover { transform: translateY(-2px); }
+        .btn-secondary { display: block; text-decoration: none; background: rgba(255,255,255,0.02); color: #94a3b8; border: 1px solid rgba(255,255,255,0.08); padding: 12px; border-radius: 12px; font-weight: 600; font-size: 14px; }
+        .btn-secondary:hover { background: rgba(255,255,255,0.08); color: white; }
+        .alert-box { background: rgba(239, 68, 68, 0.15); border-left: 4px solid #ef4444; color: #fca5a5; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; text-align: left; }
+        
+        #loading-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #020617; z-index: 9999; justify-content: center; align-items: center; flex-direction: column; }
+        .spinner-outer { border: 4px solid transparent; border-top: 4px solid #10b981; border-bottom: 4px solid #10b981; border-radius: 50%; width: 80px; height: 80px; animation: spin 1.2s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { margin-top: 20px; font-size: 16px; color: #94a3b8; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+    <div id="loading-overlay">
+        <div class="spinner-outer"></div>
+        <div class="loading-text">Extracting Detailed Metrics to MongoDB Cluster...</div>
+    </div>
+
+    <div class="main-container">
+        <h1>🧠 AI CV Intellect</h1>
+        <p class="subtitle">Deep analysis engine parsing PDFs directly into unstructured native documents.</p>
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert-box">⚠️ {{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        <form action="/upload" method="POST" enctype="multipart/form-data" onsubmit="triggerLoader()">
+            <div class="drop-zone" id="dropZone">
+                <span style="font-size:40px; display:block; margin-bottom:10px;">🍃</span>
+                <span class="drop-text" id="dropText">Drag & drop candidate PDF here</span>
+                <input type="file" name="cv_file" id="fileInput" accept=".pdf" required onchange="handleFileSelect(this)">
+            </div>
+            <div class="file-badge" id="fileBadge">
+                <span id="fileNameDisplay" style="text-overflow:ellipsis; overflow:hidden; white-space:nowrap; max-width:85%;"></span>
+                <span style="cursor:pointer;" onclick="clearFile(event)">✕</span>
+            </div>
+            <button type="submit" class="btn-submit">Execute Deep Analysis</button>
+            <a href="/leaderboard" class="btn-secondary">🏆 Open Talent Rank Matrix & Compare</a>
+        </form>
+    </div>
+    <script>
+        function handleFileSelect(input) { if (input.files && input.files[0]) { document.getElementById('fileNameDisplay').textContent = "📄 " + input.files[0].name; document.getElementById('fileBadge').style.display = 'flex'; } }
+        function clearFile(e) { e.preventDefault(); document.getElementById('fileInput').value = ""; document.getElementById('fileBadge').style.display = 'none'; }
+        function triggerLoader() { document.getElementById('loading-overlay').style.display = 'flex'; }
+    </script>
+</body>
+</html>

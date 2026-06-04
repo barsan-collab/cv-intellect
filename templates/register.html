@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CV Intellect AI - Interactive Register</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-custom-spin { animation: spin 0.8s linear infinite; }
+        @keyframes float-slow {
+            0%, 100% { transform: translateY(0px) scale(1); }
+            50% { transform: translateY(-25px) scale(1.05); }
+        }
+        .animate-float { animation: float-slow 6s ease-in-out infinite; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center font-sans antialiased relative overflow-hidden px-4">
+
+    <!-- 🌀 CENTRED DYNAMIC LOADING SCREEN -->
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-950/95 z-50 flex flex-col items-center justify-center transition-opacity duration-300">
+        <div class="relative flex items-center justify-center">
+            <div class="w-24 h-24 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-custom-spin"></div>
+            <i class="fa-solid fa-user-gear text-indigo-400 text-2xl absolute animate-pulse"></i>
+        </div>
+        <p class="text-indigo-400 mt-5 font-mono text-xs uppercase tracking-[0.2em] animate-pulse">Syncing Security Core...</p>
+    </div>
+
+    <!-- Background Glow -->
+    <div class="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-gradient-to-bl from-indigo-600/15 to-transparent rounded-full blur-[120px] pointer-events-none animate-float"></div>
+    <div class="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-gradient-to-tr from-violet-600/10 to-transparent rounded-full blur-[120px] pointer-events-none animate-float" style="animation-delay: -3s;"></div>
+
+    <!-- 📦 INTERACTIVE REGISTRATION CONTAINER -->
+    <div class="w-full max-w-md bg-slate-900/40 backdrop-blur-2xl border border-slate-800/80 p-8 rounded-3xl shadow-2xl relative z-10 transition-all duration-500 hover:border-indigo-500/30">
+        
+        <div class="text-center mb-6">
+            <div class="inline-flex items-center justify-center w-14 h-14 bg-slate-950 border border-slate-800 rounded-2xl mb-3 shadow-xl">
+                <i class="fa-solid fa-shield-halved text-xl bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent"></i>
+            </div>
+            <h1 class="text-2xl font-extrabold tracking-tight text-white">Create Security Node</h1>
+            <p class="text-slate-400 text-xs font-mono mt-1 uppercase tracking-wider">Join CV Intellect Network</p>
+        </div>
+
+        <!-- 🔔 DYNAMIC FLASH NOTIFICATIONS -->
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="mb-4 space-y-2">
+                    {% for message in messages %}
+                        <div class="flex items-center p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl">
+                            <i class="fa-solid fa-circle-exclamation mr-2 text-red-500"></i>
+                            <span class="font-medium">{{ message }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <!-- 📑 FORM LAYER (Strict PRG Pattern Mapping) -->
+        <form id="register-form" action="{{ url_for('register') }}" method="POST" class="space-y-4">
+            
+            <!-- Username Input + Live Validation -->
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center">
+                    <label for="username" class="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">Username</label>
+                    <span id="username-count" class="text-[10px] font-mono text-slate-500">0/4 chars min</span>
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-user text-sm"></i>
+                    </div>
+                    <input type="text" id="username" name="username" required autocomplete="off" placeholder="e.g., barsan_node"
+                           class="w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm text-slate-200 placeholder-slate-700">
+                </div>
+            </div>
+
+            <!-- Role Selection -->
+            <div class="space-y-1.5">
+                <label for="role" class="block text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">System Role</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-user-gear text-sm"></i>
+                    </div>
+                    <select id="role" name="role" required
+                            class="w-full pl-11 pr-10 py-3 bg-slate-950 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm text-slate-200 appearance-none cursor-pointer">
+                        <option value="applicant" selected>Applicant (Analyze CV)</option>
+                        <option value="hr">HR Recruiter (Leaderboard)</option>
+                    </select>
+                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-chevron-down text-xs"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Password Input + Strength Meter -->
+            <div class="space-y-1.5">
+                <label for="password" class="block text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">Access Password</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-lock text-sm"></i>
+                    </div>
+                    <input type="password" id="password" name="password" required placeholder="••••••••"
+                           class="w-full pl-11 pr-12 py-3 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm text-slate-200 placeholder-slate-700">
+                    <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-slate-300 focus:outline-none">
+                        <i class="fa-solid fa-eye text-sm" id="eye-icon"></i>
+                    </button>
+                </div>
+                <!-- Dynamic Progress Strength Bar -->
+                <div class="pt-1">
+                    <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
+                        <div id="strength-bar" class="h-full w-0 bg-red-500 transition-all duration-300"></div>
+                    </div>
+                    <div class="flex justify-between items-center mt-1">
+                        <span id="strength-text" class="text-[10px] font-mono text-slate-500">Strength: Empty</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Confirm Password Input + Match Check -->
+            <div class="space-y-1.5">
+                <label for="confirm-password" class="block text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">Verify Password</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
+                        <i class="fa-solid fa-circle-check text-sm"></i>
+                    </div>
+                    <input type="password" id="confirm-password" required placeholder="••••••••"
+                           class="w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none transition-all text-sm text-slate-200 placeholder-slate-700">
+                </div>
+                <span id="match-text" class="text-[10px] font-mono hidden"></span>
+            </div>
+
+            <!-- Interactive Submit Button -->
+            <button type="submit" id="submit-btn" disabled
+                    class="w-full py-3.5 px-4 bg-slate-800 text-slate-500 font-semibold text-sm rounded-2xl transition-all duration-300 cursor-not-allowed flex items-center justify-center space-x-2 relative overflow-hidden shadow-xl">
+                <span id="btn-text">Fill Required Fields</span>
+            </button>
+        </form>
+
+        <div class="mt-6 text-center border-t border-slate-800/60 pt-4 text-xs text-slate-400">
+            Already registered? 
+            <a href="{{ url_for('login') }}" class="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors ml-1 underline underline-offset-4">Sign In</a>
+        </div>
+    </div>
+
+    <!-- 🛠️ HIGHLY INTERACTIVE JAVASCRIPT LAYER -->
+    <script>
+        const loader = document.getElementById('loading-overlay');
+        const regForm = document.getElementById('register-form');
+        const usernameInput = document.getElementById('username');
+        const usernameCount = document.getElementById('username-count');
+        const passwordInput = document.getElementById('password');
+        const confirmPasswordInput = document.getElementById('confirm-password');
+        const togglePasswordBtn = document.getElementById('toggle-password');
+        const eyeIcon = document.getElementById('eye-icon');
+        const strengthBar = document.getElementById('strength-bar');
+        const strengthText = document.getElementById('strength-text');
+        const matchText = document.getElementById('match-text');
+        const submitBtn = document.getElementById('submit-btn');
+
+        let isUsernameValid = false;
+        let isPasswordStrong = false;
+        let isPasswordMatching = false;
+
+        // 1. App Initialization Loader Fadeout
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 300);
+            }, 300); 
+        });
+
+        // 2. Form Submission Loader Synchronization (PRG Layer Guard)
+        regForm.addEventListener('submit', () => {
+            loader.style.display = 'flex';
+            loader.style.opacity = '1';
+            document.querySelector('#loading-overlay p').innerText = "Registering Secure Credentials...";
+            submitBtn.disabled = true;
+        });
+
+        // 3. Password View Toggle
+        togglePasswordBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            eyeIcon.className = isPassword ? 'fa-solid fa-eye-slash text-sm' : 'fa-solid fa-eye text-sm';
+        });
+
+        // 4. Live Username Evaluation
+        usernameInput.addEventListener('input', () => {
+            const val = usernameInput.value.trim();
+            if(val.length >= 4) {
+                usernameCount.innerText = "✓ Valid Username";
+                usernameCount.className = "text-[10px] font-mono text-emerald-400";
+                isUsernameValid = true;
+            } else {
+                usernameCount.innerText = `${val.length}/4 chars min`;
+                usernameCount.className = "text-[10px] font-mono text-slate-500";
+                isUsernameValid = false;
+            }
+            validateFormState();
+        });
+
+        // 5. Dynamic Password Strength Meter Engine
+        passwordInput.addEventListener('input', () => {
+            const val = passwordInput.value;
+            let score = 0;
+
+            if (val.length >= 6) score++;
+            if (/[A-Z]/.test(val)) score++;
+            if (/[0-9]/.test(val)) score++;
+            if (/[^A-Za-z0-9]/.test(val)) score++;
+
+            if (val.length === 0) {
+                strengthBar.style.width = '0%';
+                strengthText.innerText = "Strength: Empty";
+                strengthText.className = "text-[10px] font-mono text-slate-500";
+                isPasswordStrong = false;
+            } else if (score <= 1) {
+                strengthBar.style.width = '33%';
+                strengthBar.className = "h-full bg-red-500 transition-all duration-300";
+                strengthText.innerText = "Strength: Weak 🔴";
+                strengthText.className = "text-[10px] font-mono text-red-400";
+                isPasswordStrong = false;
+            } else if (score === 2 || score === 3) {
+                strengthBar.style.width = '66%';
+                strengthBar.className = "h-full bg-amber-500 transition-all duration-300";
+                strengthText.innerText = "Strength: Medium 🟡";
+                strengthText.className = "text-[10px] font-mono text-amber-400";
+                isPasswordStrong = true; // Medium configuration allowed
+            } else {
+                strengthBar.style.width = '100%';
+                strengthBar.className = "h-full bg-emerald-500 transition-all duration-300";
+                strengthText.innerText = "Strength: Elite Secure 🟢";
+                strengthText.className = "text-[10px] font-mono text-emerald-400";
+                isPasswordStrong = true;
+            }
+            checkPasswordMatch();
+        });
+
+        // 6. Real-time Integrity Password Match Check
+        function checkPasswordMatch() {
+            const pass = passwordInput.value;
+            const confirmPass = confirmPasswordInput.value;
+
+            if (confirmPass.length === 0) {
+                matchText.classList.add('hidden');
+                confirmPasswordInput.className = "w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm text-slate-200";
+                isPasswordMatching = false;
+            } else if (pass === confirmPass) {
+                matchText.classList.remove('hidden');
+                matchText.innerText = "✓ Passwords sync verification matched.";
+                matchText.className = "text-[10px] font-mono text-emerald-400 mt-1";
+                confirmPasswordInput.className = "w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-emerald-500/50 rounded-2xl focus:outline-none text-sm text-slate-200";
+                isPasswordMatching = true;
+            } else {
+                matchText.classList.remove('hidden');
+                matchText.innerText = "✗ Mismatch detected in password array.";
+                matchText.className = "text-[10px] font-mono text-red-400 mt-1";
+                confirmPasswordInput.className = "w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-red-500/50 rounded-2xl focus:outline-none text-sm text-slate-200";
+                isPasswordMatching = false;
+            }
+            validateFormState();
+        }
+
+        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
+
+        // 7. Master System State Validator
+        function validateFormState() {
+            if (isUsernameValid && isPasswordStrong && isPasswordMatching) {
+                submitBtn.disabled = false;
+                submitBtn.className = "w-full py-3.5 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm rounded-2xl transition-all duration-300 shadow-xl shadow-indigo-950/50 active:scale-[0.99] flex items-center justify-center space-x-2 cursor-pointer";
+                document.getElementById('btn-text').innerText = "Register & Sync Instance";
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.className = "w-full py-3.5 px-4 bg-slate-800 text-slate-500 font-semibold text-sm rounded-2xl transition-all duration-300 cursor-not-allowed flex items-center justify-center space-x-2 relative overflow-hidden";
+                document.getElementById('btn-text').innerText = "Fill Required Fields";
+            }
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Realistic Evaluation Matrix - CV Intellect AI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .animate-custom-spin { animation: spin 0.8s linear infinite; }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased relative px-4 py-6 md:p-8">
+
+    <div id="loading-overlay" class="fixed inset-0 bg-slate-950/95 z-50 flex flex-col items-center justify-center transition-opacity duration-300">
+        <div class="relative flex items-center justify-center">
+            <div class="w-24 h-24 rounded-full border-4 border-slate-800 border-t-emerald-500 animate-custom-spin"></div>
+            <i class="fa-solid fa-microchip text-emerald-400 text-2xl absolute animate-pulse"></i>
+        </div>
+        <p class="text-emerald-400 mt-5 font-mono text-xs uppercase tracking-[0.2em] animate-pulse">Assembling Reality Metrics Engine...</p>
+    </div>
+
+    <div class="max-w-5xl mx-auto space-y-6 relative z-10">
+        
+        <header class="flex flex-col sm:flex-row justify-between items-center bg-slate-900/50 backdrop-blur-xl border border-slate-800/80 p-5 rounded-2xl gap-4">
+            <div class="flex items-center space-x-3 text-center sm:text-left">
+                <div class="w-12 h-12 bg-emerald-600/10 border border-emerald-500/30 rounded-xl flex items-center justify-center text-emerald-400 shadow-lg">
+                    <i class="fa-solid fa-chart-line text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-extrabold tracking-tight text-white">Realistic Engineering Diagnostics</h1>
+                    <p class="text-xs font-mono text-slate-400">Analysis Reference Identity: #000{{ result.id }}</p>
+                </div>
+            </div>
+            <a href="/dashboard" class="w-full sm:w-auto px-5 py-2.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 text-xs font-mono font-bold uppercase tracking-wider rounded-xl transition-all duration-300 text-center">
+                <i class="fa-solid fa-arrow-left mr-2"></i>Return to Dashboard
+            </a>
+        </header>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            
+            <div class="md:col-span-1 space-y-6">
+                <div class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-3xl text-center backdrop-blur-md">
+                    <p class="text-[10px] font-mono uppercase tracking-[0.15em] text-slate-500 mb-4">Realistic Alignment Rating</p>
+                    <div class="inline-flex items-center justify-center w-28 h-28 rounded-full bg-indigo-500/5 border-4 border-indigo-500/20 shadow-xl relative mb-2">
+                        <span class="text-4xl font-black text-slate-100 font-mono">{{ result.hr_rating }}.2</span>
+                        <span class="text-xs text-slate-500 font-mono absolute bottom-3">/ 10</span>
+                    </div>
+                    <p class="text-xs font-mono font-bold text-indigo-400 mt-2 uppercase tracking-wide">Highly Capable Core Engineer</p>
+                </div>
+
+                <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl space-y-4">
+                    <h3 class="text-xs font-mono uppercase tracking-widest text-slate-400 border-b border-slate-800/60 pb-2 flex items-center justify-between">
+                        <span>Extracted Metadata</span>
+                        <i class="fa-solid fa-database text-emerald-500/50 text-[10px]"></i>
+                    </h3>
+                    <div class="space-y-1">
+                        <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wider">Candidate Node Identity</p>
+                        <p class="text-sm font-bold text-slate-200">{{ result.name }}</p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wider">Communication Vector</p>
+                        <p class="text-xs font-mono text-slate-300 truncate">{{ result.email }}</p>
+                    </div>
+                    <div class="space-y-1">
+                        <p class="text-[9px] font-mono text-slate-500 uppercase tracking-wider">Network Connectivity Info</p>
+                        <p class="text-xs font-mono text-slate-400">{{ result.phone }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="md:col-span-2 space-y-6">
+                
+                <div class="bg-slate-900/40 border border-slate-800/80 p-6 rounded-3xl space-y-4">
+                    <div class="flex items-center space-x-2 border-b border-slate-800/60 pb-3">
+                        <i class="fa-solid fa-brain text-indigo-400 text-sm"></i>
+                        <h2 class="text-xs font-mono font-bold uppercase tracking-widest text-slate-300">LLM Deep-Scan Informative Summary</h2>
+                    </div>
+                    <div class="bg-slate-950/60 border border-slate-800 p-5 rounded-xl relative">
+                        <i class="fa-solid fa-quote-left text-2xl text-slate-800 absolute top-2 left-3"></i>
+                        <p class="text-xs md:text-sm text-slate-300 leading-relaxed italic pl-5 pt-1">
+                            {{ result.hr_verdict }}
+                        </p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    
+                    <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl space-y-3">
+                        <div class="flex items-center space-x-2 text-emerald-400 font-mono text-xs uppercase tracking-wider border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-circle-check"></i>
+                            <span>Key Strengths (The Pros)</span>
+                        </div>
+                        <ul class="space-y-2.5">
+                            {% for pro in result.pros_list %}
+                            <li class="flex items-start text-xs text-slate-300 leading-normal">
+                                <span class="text-emerald-500 mr-2 mt-0.5"><i class="fa-solid fa-caret-right"></i></span>
+                                <span>{{ pro }}</span>
+                            </li>
+                            {% else %}
+                            <li class="text-xs text-slate-600 italic font-mono">No explicitly highlighted parameters verified.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                    <div class="bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl space-y-3">
+                        <div class="flex items-center space-x-2 text-amber-500 font-mono text-xs uppercase tracking-wider border-b border-slate-800 pb-2">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <span>Critical Gaps (The Cons)</span>
+                        </div>
+                        <ul class="space-y-2.5">
+                            {% for con in result.cons_list %}
+                            <li class="flex items-start text-xs text-slate-300 leading-normal">
+                                <span class="text-amber-500 mr-2 mt-0.5"><i class="fa-solid fa-bolt"></i></span>
+                                <span>{{ con }}</span>
+                            </li>
+                            {% else %}
+                            <li class="text-xs text-slate-600 italic font-mono">No structural gaps declared in current runtime.</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const loader = document.getElementById('loading-overlay');
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                loader.style.opacity = '0';
+                setTimeout(() => loader.style.display = 'none', 300);
+            }, 300); 
+        });
+    </script>
+</body>
+</html>
