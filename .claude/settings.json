@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c \"import urllib.request; urllib.request.urlopen\\('http://127.0.0.1:5001'\\); print\\('Server UP'\\)\")"
+    ]
+  }
+}

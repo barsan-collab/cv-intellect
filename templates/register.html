@@ -1,286 +1,285 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV Intellect AI - Interactive Register</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .animate-custom-spin { animation: spin 0.8s linear infinite; }
-        @keyframes float-slow {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-25px) scale(1.05); }
-        }
-        .animate-float { animation: float-slow 6s ease-in-out infinite; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — CV Intellect</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=4">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; }
+
+    .bg-glow {
+      position: fixed; top: -20%; right: -10%;
+      width: 700px; height: 600px; border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(0,113,227,.1) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .bg-glow-2 {
+      position: fixed; bottom: -20%; left: -10%;
+      width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(191,90,242,.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .auth-wrap {
+      width: 100%; max-width: 420px; position: relative; z-index: 2;
+      animation: scaleIn .4s var(--t-enter) both;
+    }
+    .auth-card {
+      background: rgba(28,28,30,.75);
+      -webkit-backdrop-filter: blur(50px) saturate(180%);
+      backdrop-filter: blur(50px) saturate(180%);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-2xl); padding: 38px;
+      box-shadow: var(--s-xl);
+    }
+
+    .auth-logo-wrap { display: flex; justify-content: center; margin-bottom: 24px; }
+    .auth-logo {
+      width: 58px; height: 58px; border-radius: 16px;
+      background: var(--g-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px; box-shadow: 0 8px 32px rgba(0,113,227,.35);
+      animation: float 5s ease-in-out infinite;
+    }
+    .auth-title { font-size: 24px; font-weight: 800; color: var(--c-text); letter-spacing: -0.04em; text-align: center; margin-bottom: 5px; }
+    .auth-sub   { font-size: 14px; color: var(--c-text4); text-align: center; margin-bottom: 26px; }
+
+    .form-stack { display: flex; flex-direction: column; gap: 14px; }
+
+    /* Role selector */
+    .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .role-option { position: relative; }
+    .role-option input { position: absolute; opacity: 0; pointer-events: none; }
+    .role-label {
+      display: flex; align-items: center; gap: 9px;
+      padding: 11px 14px; border-radius: var(--r-md);
+      border: 1px solid var(--c-border); cursor: pointer;
+      background: rgba(255,255,255,.04);
+      transition: border-color var(--t-base), background var(--t-base), color var(--t-base);
+      font-size: 14px; font-weight: 500; color: var(--c-text3);
+    }
+    .role-label i { font-size: 15px; }
+    .role-option input:checked + .role-label {
+      border-color: rgba(0,113,227,.4); background: rgba(0,113,227,.1); color: #5ac8fa;
+    }
+    .role-label:hover { border-color: var(--c-border-2); color: var(--c-text2); }
+
+    /* Strength bar */
+    .strength-bar-wrap { height: 3px; background: rgba(255,255,255,.06); border-radius: 100px; overflow: hidden; margin-top: 8px; }
+    .strength-bar { height: 100%; border-radius: 100px; width: 0; transition: width .3s ease, background .3s ease; }
+    .field-feedback { font-size: 11px; font-weight: 600; margin-top: 5px; font-family: var(--font-mono); }
+    .field-feedback.ok  { color: var(--c-green); }
+    .field-feedback.bad { color: var(--c-red); }
+    .field-feedback.mid { color: var(--c-orange); }
+
+    .btn-submit {
+      width: 100%; padding: 14px; border-radius: 980px;
+      font-family: var(--font); font-size: 15px; font-weight: 600;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background var(--t-base), transform var(--t-smooth), box-shadow var(--t-smooth), opacity var(--t-base);
+      letter-spacing: -0.01em; margin-top: 4px;
+    }
+    .btn-submit.ready {
+      background: var(--c-blue); color: #fff;
+      box-shadow: 0 4px 20px rgba(0,113,227,.3);
+    }
+    .btn-submit.ready:hover { background: var(--c-blue-lt); transform: scale(1.01); box-shadow: 0 8px 32px rgba(0,113,227,.4); }
+    .btn-submit.ready:active { transform: scale(0.98); }
+    .btn-submit.disabled { background: rgba(255,255,255,.06); color: var(--c-text4); cursor: not-allowed; }
+
+    .toggle-pw {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--c-text4); background: none; border: none; cursor: pointer;
+      font-size: 14px; padding: 4px; transition: color var(--t-fast);
+    }
+    .toggle-pw:hover { color: var(--c-text3); }
+
+    .auth-footer {
+      margin-top: 22px; padding-top: 20px; border-top: 1px solid var(--c-border);
+      text-align: center; font-size: 14px; color: var(--c-text4);
+    }
+    .auth-footer a { color: var(--c-blue); font-weight: 600; text-decoration: none; margin-left: 4px; }
+    .auth-footer a:hover { color: var(--c-blue-lt); }
+
+    .back-link {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      margin-bottom: 22px; font-size: 14px; color: var(--c-text4);
+      text-decoration: none; transition: color var(--t-fast);
+    }
+    .back-link:hover { color: var(--c-text3); }
+
+    .label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 7px; }
+    .label-count { font-size: 11px; color: var(--c-text4); font-family: var(--font-mono); }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center font-sans antialiased relative overflow-hidden px-4">
+<body>
+  <div class="loading-overlay" id="loader">
+    <div class="loader-ring"></div>
+    <div class="loader-text">CREATING ACCOUNT</div>
+  </div>
 
-    <!-- 🌀 CENTRED DYNAMIC LOADING SCREEN -->
-    <div id="loading-overlay" class="fixed inset-0 bg-slate-950/95 z-50 flex flex-col items-center justify-center transition-opacity duration-300">
-        <div class="relative flex items-center justify-center">
-            <div class="w-24 h-24 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-custom-spin"></div>
-            <i class="fa-solid fa-user-gear text-indigo-400 text-2xl absolute animate-pulse"></i>
+  <div class="bg-glow"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="auth-wrap">
+    <a href="{{ url_for('index') }}" class="back-link">
+      <i class="fa-solid fa-chevron-left" style="font-size:12px;"></i> Back to home
+    </a>
+
+    <div class="auth-card">
+      <div class="auth-logo-wrap">
+        <div class="auth-logo">🧠</div>
+      </div>
+      <h1 class="auth-title">Create your account</h1>
+      <p class="auth-sub">Join CV Intellect — free forever</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}{% for msg in messages %}
+          <div class="flash-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+
+      <form id="reg-form" action="{{ url_for('register') }}" method="POST" class="form-stack">
+
+        <div class="form-group">
+          <div class="label-row">
+            <label class="form-label" style="margin:0;">Username</label>
+            <span class="label-count" id="uname-count">min 4 chars</span>
+          </div>
+          <div class="input-wrap">
+            <i class="fa-solid fa-user input-icon"></i>
+            <input type="text" id="uname" name="username" class="input-field" placeholder="e.g. john_doe" required autocomplete="off">
+          </div>
         </div>
-        <p class="text-indigo-400 mt-5 font-mono text-xs uppercase tracking-[0.2em] animate-pulse">Syncing Security Core...</p>
-    </div>
 
-    <!-- Background Glow -->
-    <div class="absolute top-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-gradient-to-bl from-indigo-600/15 to-transparent rounded-full blur-[120px] pointer-events-none animate-float"></div>
-    <div class="absolute bottom-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-gradient-to-tr from-violet-600/10 to-transparent rounded-full blur-[120px] pointer-events-none animate-float" style="animation-delay: -3s;"></div>
-
-    <!-- 📦 INTERACTIVE REGISTRATION CONTAINER -->
-    <div class="w-full max-w-md bg-slate-900/40 backdrop-blur-2xl border border-slate-800/80 p-8 rounded-3xl shadow-2xl relative z-10 transition-all duration-500 hover:border-indigo-500/30">
-        
-        <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-14 h-14 bg-slate-950 border border-slate-800 rounded-2xl mb-3 shadow-xl">
-                <i class="fa-solid fa-shield-halved text-xl bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent"></i>
+        <div class="form-group">
+          <label class="form-label">Account Role</label>
+          <div class="role-grid">
+            <div class="role-option">
+              <input type="radio" name="role" id="role-applicant" value="applicant" checked>
+              <label class="role-label" for="role-applicant">
+                <i class="fa-solid fa-user"></i> Applicant
+              </label>
             </div>
-            <h1 class="text-2xl font-extrabold tracking-tight text-white">Create Security Node</h1>
-            <p class="text-slate-400 text-xs font-mono mt-1 uppercase tracking-wider">Join CV Intellect Network</p>
+            <div class="role-option">
+              <input type="radio" name="role" id="role-hr" value="hr">
+              <label class="role-label" for="role-hr">
+                <i class="fa-solid fa-shield-halved"></i> HR Recruiter
+              </label>
+            </div>
+          </div>
         </div>
 
-        <!-- 🔔 DYNAMIC FLASH NOTIFICATIONS -->
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="mb-4 space-y-2">
-                    {% for message in messages %}
-                        <div class="flex items-center p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl">
-                            <i class="fa-solid fa-circle-exclamation mr-2 text-red-500"></i>
-                            <span class="font-medium">{{ message }}</span>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <!-- 📑 FORM LAYER (Strict PRG Pattern Mapping) -->
-        <form id="register-form" action="{{ url_for('register') }}" method="POST" class="space-y-4">
-            
-            <!-- Username Input + Live Validation -->
-            <div class="space-y-1.5">
-                <div class="flex justify-between items-center">
-                    <label for="username" class="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">Username</label>
-                    <span id="username-count" class="text-[10px] font-mono text-slate-500">0/4 chars min</span>
-                </div>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
-                        <i class="fa-solid fa-user text-sm"></i>
-                    </div>
-                    <input type="text" id="username" name="username" required autocomplete="off" placeholder="e.g., barsan_node"
-                           class="w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm text-slate-200 placeholder-slate-700">
-                </div>
-            </div>
-
-            <!-- Role Selection -->
-            <div class="space-y-1.5">
-                <label for="role" class="block text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">System Role</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
-                        <i class="fa-solid fa-user-gear text-sm"></i>
-                    </div>
-                    <select id="role" name="role" required
-                            class="w-full pl-11 pr-10 py-3 bg-slate-950 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm text-slate-200 appearance-none cursor-pointer">
-                        <option value="applicant" selected>Applicant (Analyze CV)</option>
-                        <option value="hr">HR Recruiter (Leaderboard)</option>
-                    </select>
-                    <div class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-slate-500">
-                        <i class="fa-solid fa-chevron-down text-xs"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Password Input + Strength Meter -->
-            <div class="space-y-1.5">
-                <label for="password" class="block text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">Access Password</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
-                        <i class="fa-solid fa-lock text-sm"></i>
-                    </div>
-                    <input type="password" id="password" name="password" required placeholder="••••••••"
-                           class="w-full pl-11 pr-12 py-3 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm text-slate-200 placeholder-slate-700">
-                    <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-slate-300 focus:outline-none">
-                        <i class="fa-solid fa-eye text-sm" id="eye-icon"></i>
-                    </button>
-                </div>
-                <!-- Dynamic Progress Strength Bar -->
-                <div class="pt-1">
-                    <div class="h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                        <div id="strength-bar" class="h-full w-0 bg-red-500 transition-all duration-300"></div>
-                    </div>
-                    <div class="flex justify-between items-center mt-1">
-                        <span id="strength-text" class="text-[10px] font-mono text-slate-500">Strength: Empty</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Confirm Password Input + Match Check -->
-            <div class="space-y-1.5">
-                <label for="confirm-password" class="block text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">Verify Password</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
-                        <i class="fa-solid fa-circle-check text-sm"></i>
-                    </div>
-                    <input type="password" id="confirm-password" required placeholder="••••••••"
-                           class="w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none transition-all text-sm text-slate-200 placeholder-slate-700">
-                </div>
-                <span id="match-text" class="text-[10px] font-mono hidden"></span>
-            </div>
-
-            <!-- Interactive Submit Button -->
-            <button type="submit" id="submit-btn" disabled
-                    class="w-full py-3.5 px-4 bg-slate-800 text-slate-500 font-semibold text-sm rounded-2xl transition-all duration-300 cursor-not-allowed flex items-center justify-center space-x-2 relative overflow-hidden shadow-xl">
-                <span id="btn-text">Fill Required Fields</span>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="pw" name="password" class="input-field" placeholder="••••••••" required>
+            <button type="button" class="toggle-pw" id="toggle-pw">
+              <i class="fa-solid fa-eye" id="eye-icon"></i>
             </button>
-        </form>
-
-        <div class="mt-6 text-center border-t border-slate-800/60 pt-4 text-xs text-slate-400">
-            Already registered? 
-            <a href="{{ url_for('login') }}" class="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors ml-1 underline underline-offset-4">Sign In</a>
+          </div>
+          <div class="strength-bar-wrap"><div class="strength-bar" id="str-bar"></div></div>
+          <div class="field-feedback" id="str-text"></div>
         </div>
+
+        <div class="form-group">
+          <label class="form-label">Confirm Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-circle-check input-icon"></i>
+            <input type="password" id="pw-confirm" class="input-field" placeholder="••••••••" required>
+          </div>
+          <div class="field-feedback" id="match-text"></div>
+        </div>
+
+        <button type="submit" id="submit-btn" class="btn-submit disabled" disabled>
+          <span id="btn-label">Fill required fields</span>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Already have an account?
+        <a href="{{ url_for('login') }}">Sign in</a>
+      </div>
     </div>
+  </div>
 
-    <!-- 🛠️ HIGHLY INTERACTIVE JAVASCRIPT LAYER -->
-    <script>
-        const loader = document.getElementById('loading-overlay');
-        const regForm = document.getElementById('register-form');
-        const usernameInput = document.getElementById('username');
-        const usernameCount = document.getElementById('username-count');
-        const passwordInput = document.getElementById('password');
-        const confirmPasswordInput = document.getElementById('confirm-password');
-        const togglePasswordBtn = document.getElementById('toggle-password');
-        const eyeIcon = document.getElementById('eye-icon');
-        const strengthBar = document.getElementById('strength-bar');
-        const strengthText = document.getElementById('strength-text');
-        const matchText = document.getElementById('match-text');
-        const submitBtn = document.getElementById('submit-btn');
+  <script>
+    const loader   = document.getElementById('loader');
+    const regForm  = document.getElementById('reg-form');
+    const unameEl  = document.getElementById('uname');
+    const uCount   = document.getElementById('uname-count');
+    const pwEl     = document.getElementById('pw');
+    const pwConf   = document.getElementById('pw-confirm');
+    const strBar   = document.getElementById('str-bar');
+    const strText  = document.getElementById('str-text');
+    const matchTxt = document.getElementById('match-text');
+    const submitBtn= document.getElementById('submit-btn');
+    const btnLabel = document.getElementById('btn-label');
 
-        let isUsernameValid = false;
-        let isPasswordStrong = false;
-        let isPasswordMatching = false;
+    window.addEventListener('load', () => setTimeout(() => loader.classList.add('hidden'), 250));
+    regForm.addEventListener('submit', () => loader.classList.remove('hidden'));
 
-        // 1. App Initialization Loader Fadeout
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 300);
-            }, 300); 
-        });
+    document.getElementById('toggle-pw').addEventListener('click', () => {
+      const show = pwEl.type === 'password';
+      pwEl.type = show ? 'text' : 'password';
+      document.getElementById('eye-icon').className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    });
 
-        // 2. Form Submission Loader Synchronization (PRG Layer Guard)
-        regForm.addEventListener('submit', () => {
-            loader.style.display = 'flex';
-            loader.style.opacity = '1';
-            document.querySelector('#loading-overlay p').innerText = "Registering Secure Credentials...";
-            submitBtn.disabled = true;
-        });
+    let valid = { uname: false, pw: false, match: false };
 
-        // 3. Password View Toggle
-        togglePasswordBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            eyeIcon.className = isPassword ? 'fa-solid fa-eye-slash text-sm' : 'fa-solid fa-eye text-sm';
-        });
+    unameEl.addEventListener('input', () => {
+      const v = unameEl.value.trim();
+      valid.uname = v.length >= 4;
+      uCount.textContent = valid.uname ? '✓' : `${v.length}/4`;
+      uCount.style.color = valid.uname ? 'var(--c-green)' : '';
+      checkAll();
+    });
 
-        // 4. Live Username Evaluation
-        usernameInput.addEventListener('input', () => {
-            const val = usernameInput.value.trim();
-            if(val.length >= 4) {
-                usernameCount.innerText = "✓ Valid Username";
-                usernameCount.className = "text-[10px] font-mono text-emerald-400";
-                isUsernameValid = true;
-            } else {
-                usernameCount.innerText = `${val.length}/4 chars min`;
-                usernameCount.className = "text-[10px] font-mono text-slate-500";
-                isUsernameValid = false;
-            }
-            validateFormState();
-        });
+    pwEl.addEventListener('input', () => {
+      const v = pwEl.value;
+      let score = 0;
+      if (v.length >= 6) score++;
+      if (/[A-Z]/.test(v)) score++;
+      if (/[0-9]/.test(v)) score++;
+      if (/[^A-Za-z0-9]/.test(v)) score++;
+      const lvls = [
+        { w:'0%',   c:'transparent', t:'', cls:'' },
+        { w:'33%',  c:'var(--c-red)',    t:'Weak',   cls:'bad' },
+        { w:'66%',  c:'var(--c-orange)', t:'Medium', cls:'mid' },
+        { w:'100%', c:'var(--c-green)',  t:'Strong', cls:'ok'  }
+      ];
+      const lvl = v.length === 0 ? lvls[0] : score <= 1 ? lvls[1] : score <= 2 ? lvls[2] : lvls[3];
+      strBar.style.width = lvl.w; strBar.style.background = lvl.c;
+      strText.textContent = lvl.t ? `Strength: ${lvl.t}` : '';
+      strText.className = `field-feedback ${lvl.cls}`;
+      valid.pw = score >= 2 && v.length >= 6;
+      checkMatch();
+    });
 
-        // 5. Dynamic Password Strength Meter Engine
-        passwordInput.addEventListener('input', () => {
-            const val = passwordInput.value;
-            let score = 0;
+    function checkMatch() {
+      const p1 = pwEl.value, p2 = pwConf.value;
+      if (!p2) { matchTxt.textContent = ''; valid.match = false; }
+      else if (p1 === p2) {
+        matchTxt.textContent = '✓ Passwords match'; matchTxt.className = 'field-feedback ok';
+        pwConf.classList.remove('error'); pwConf.classList.add('success'); valid.match = true;
+      } else {
+        matchTxt.textContent = '✗ Do not match'; matchTxt.className = 'field-feedback bad';
+        pwConf.classList.remove('success'); pwConf.classList.add('error'); valid.match = false;
+      }
+      checkAll();
+    }
+    pwConf.addEventListener('input', checkMatch);
 
-            if (val.length >= 6) score++;
-            if (/[A-Z]/.test(val)) score++;
-            if (/[0-9]/.test(val)) score++;
-            if (/[^A-Za-z0-9]/.test(val)) score++;
-
-            if (val.length === 0) {
-                strengthBar.style.width = '0%';
-                strengthText.innerText = "Strength: Empty";
-                strengthText.className = "text-[10px] font-mono text-slate-500";
-                isPasswordStrong = false;
-            } else if (score <= 1) {
-                strengthBar.style.width = '33%';
-                strengthBar.className = "h-full bg-red-500 transition-all duration-300";
-                strengthText.innerText = "Strength: Weak 🔴";
-                strengthText.className = "text-[10px] font-mono text-red-400";
-                isPasswordStrong = false;
-            } else if (score === 2 || score === 3) {
-                strengthBar.style.width = '66%';
-                strengthBar.className = "h-full bg-amber-500 transition-all duration-300";
-                strengthText.innerText = "Strength: Medium 🟡";
-                strengthText.className = "text-[10px] font-mono text-amber-400";
-                isPasswordStrong = true; // Medium configuration allowed
-            } else {
-                strengthBar.style.width = '100%';
-                strengthBar.className = "h-full bg-emerald-500 transition-all duration-300";
-                strengthText.innerText = "Strength: Elite Secure 🟢";
-                strengthText.className = "text-[10px] font-mono text-emerald-400";
-                isPasswordStrong = true;
-            }
-            checkPasswordMatch();
-        });
-
-        // 6. Real-time Integrity Password Match Check
-        function checkPasswordMatch() {
-            const pass = passwordInput.value;
-            const confirmPass = confirmPasswordInput.value;
-
-            if (confirmPass.length === 0) {
-                matchText.classList.add('hidden');
-                confirmPasswordInput.className = "w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm text-slate-200";
-                isPasswordMatching = false;
-            } else if (pass === confirmPass) {
-                matchText.classList.remove('hidden');
-                matchText.innerText = "✓ Passwords sync verification matched.";
-                matchText.className = "text-[10px] font-mono text-emerald-400 mt-1";
-                confirmPasswordInput.className = "w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-emerald-500/50 rounded-2xl focus:outline-none text-sm text-slate-200";
-                isPasswordMatching = true;
-            } else {
-                matchText.classList.remove('hidden');
-                matchText.innerText = "✗ Mismatch detected in password array.";
-                matchText.className = "text-[10px] font-mono text-red-400 mt-1";
-                confirmPasswordInput.className = "w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-red-500/50 rounded-2xl focus:outline-none text-sm text-slate-200";
-                isPasswordMatching = false;
-            }
-            validateFormState();
-        }
-
-        confirmPasswordInput.addEventListener('input', checkPasswordMatch);
-
-        // 7. Master System State Validator
-        function validateFormState() {
-            if (isUsernameValid && isPasswordStrong && isPasswordMatching) {
-                submitBtn.disabled = false;
-                submitBtn.className = "w-full py-3.5 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm rounded-2xl transition-all duration-300 shadow-xl shadow-indigo-950/50 active:scale-[0.99] flex items-center justify-center space-x-2 cursor-pointer";
-                document.getElementById('btn-text').innerText = "Register & Sync Instance";
-            } else {
-                submitBtn.disabled = true;
-                submitBtn.className = "w-full py-3.5 px-4 bg-slate-800 text-slate-500 font-semibold text-sm rounded-2xl transition-all duration-300 cursor-not-allowed flex items-center justify-center space-x-2 relative overflow-hidden";
-                document.getElementById('btn-text').innerText = "Fill Required Fields";
-            }
-        }
-    </script>
+    function checkAll() {
+      const ok = valid.uname && valid.pw && valid.match;
+      submitBtn.disabled = !ok;
+      submitBtn.className = `btn-submit ${ok ? 'ready' : 'disabled'}`;
+      btnLabel.textContent = ok ? 'Create Account' : 'Fill required fields';
+    }
+  </script>
 </body>
-</html> 
+</html>

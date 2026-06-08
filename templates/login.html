@@ -1,129 +1,171 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CV Intellect AI - Secure Terminal Sign In</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>
-        @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-        }
-        .animate-custom-spin { animation: spin 0.8s linear infinite; }
-        @keyframes float-slow {
-            0%, 100% { transform: translateY(0px) scale(1); }
-            50% { transform: translateY(-25px) scale(1.05); }
-        }
-        .animate-float { animation: float-slow 6s ease-in-out infinite; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — CV Intellect</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=4">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    body { display:flex; align-items:center; justify-content:center; min-height:100vh; padding:24px; }
+
+    /* Ambient background */
+    .bg-glow {
+      position: fixed; top: -20%; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 600px; border-radius: 50%;
+      background: radial-gradient(ellipse at 50% 40%, rgba(0,113,227,.1) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .bg-glow-2 {
+      position: fixed; bottom: -20%; right: -10%;
+      width: 500px; height: 500px; border-radius: 50%;
+      background: radial-gradient(ellipse, rgba(191,90,242,.07) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .auth-wrap {
+      width: 100%; max-width: 400px; position: relative; z-index: 2;
+      animation: scaleIn .4s var(--t-enter) both;
+    }
+
+    .auth-card {
+      background: rgba(28,28,30,.75);
+      -webkit-backdrop-filter: blur(50px) saturate(180%);
+      backdrop-filter: blur(50px) saturate(180%);
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-2xl);
+      padding: 40px;
+      box-shadow: var(--s-xl);
+    }
+
+    .auth-logo-wrap {
+      display: flex; justify-content: center; margin-bottom: 28px;
+    }
+    .auth-logo {
+      width: 60px; height: 60px; border-radius: 18px;
+      background: var(--g-primary);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px;
+      box-shadow: 0 8px 32px rgba(0,113,227,.35);
+      animation: float 5s ease-in-out infinite;
+    }
+    .auth-title {
+      font-size: 26px; font-weight: 800; color: var(--c-text);
+      letter-spacing: -0.04em; text-align: center; margin-bottom: 6px;
+    }
+    .auth-sub {
+      font-size: 14px; color: var(--c-text4); text-align: center; margin-bottom: 30px;
+    }
+
+    .form-stack { display: flex; flex-direction: column; gap: 16px; }
+
+    .btn-submit {
+      width: 100%; padding: 14px; border-radius: 980px;
+      background: var(--c-blue); color: #fff;
+      font-family: var(--font); font-size: 15px; font-weight: 600;
+      border: none; cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: background var(--t-base), transform var(--t-smooth), box-shadow var(--t-smooth);
+      box-shadow: 0 4px 20px rgba(0,113,227,.3);
+      letter-spacing: -0.01em; margin-top: 4px;
+    }
+    .btn-submit:hover { background: var(--c-blue-lt); transform: scale(1.01); box-shadow: 0 8px 32px rgba(0,113,227,.4); }
+    .btn-submit:active { transform: scale(0.98); }
+
+    .toggle-pw {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      color: var(--c-text4); background: none; border: none; cursor: pointer;
+      font-size: 14px; padding: 4px; transition: color var(--t-fast);
+    }
+    .toggle-pw:hover { color: var(--c-text3); }
+
+    .auth-footer {
+      margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--c-border);
+      text-align: center; font-size: 14px; color: var(--c-text4);
+    }
+    .auth-footer a { color: var(--c-blue); font-weight: 600; text-decoration: none; margin-left: 4px; }
+    .auth-footer a:hover { color: var(--c-blue-lt); }
+
+    .back-link {
+      display: flex; align-items: center; justify-content: center; gap: 6px;
+      margin-bottom: 24px; font-size: 14px; color: var(--c-text4);
+      text-decoration: none; transition: color var(--t-fast);
+    }
+    .back-link:hover { color: var(--c-text3); }
+  </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center font-sans antialiased relative overflow-hidden px-4">
+<body>
+  <div class="loading-overlay" id="loader">
+    <div class="loader-ring"></div>
+    <div class="loader-text" id="loader-text">SIGNING IN</div>
+  </div>
 
-    <div id="loading-overlay" class="fixed inset-0 bg-slate-950/95 z-50 flex flex-col items-center justify-center transition-opacity duration-300">
-        <div class="relative flex items-center justify-center">
-            <div class="w-24 h-24 rounded-full border-4 border-slate-800 border-t-indigo-500 animate-custom-spin"></div>
-            <i class="fa-solid fa-key text-indigo-400 text-2xl absolute animate-pulse"></i>
+  <div class="bg-glow"></div>
+  <div class="bg-glow-2"></div>
+
+  <div class="auth-wrap">
+    <a href="{{ url_for('index') }}" class="back-link">
+      <i class="fa-solid fa-chevron-left" style="font-size:12px;"></i> Back to home
+    </a>
+
+    <div class="auth-card">
+      <div class="auth-logo-wrap">
+        <div class="auth-logo">🧠</div>
+      </div>
+      <h1 class="auth-title">Welcome back</h1>
+      <p class="auth-sub">Sign in to your CV Intellect account</p>
+
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}
+          {% for msg in messages %}
+            <div class="flash-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form id="login-form" action="{{ url_for('login') }}" method="POST" class="form-stack">
+        <div class="form-group">
+          <label class="form-label">Username</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-user input-icon"></i>
+            <input type="text" name="username" class="input-field" placeholder="Your username" required autocomplete="off">
+          </div>
         </div>
-        <p class="text-indigo-400 mt-5 font-mono text-xs uppercase tracking-[0.2em] animate-pulse">Authenticating Security Token...</p>
-    </div>
-
-    <div class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-gradient-to-br from-indigo-600/15 to-transparent rounded-full blur-[120px] pointer-events-none animate-float"></div>
-    <div class="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-gradient-to-tl from-violet-600/10 to-transparent rounded-full blur-[120px] pointer-events-none animate-float" style="animation-delay: -3s;"></div>
-
-    <div class="w-full max-w-md bg-slate-900/40 backdrop-blur-2xl border border-slate-800/80 p-8 rounded-3xl shadow-2xl relative z-10 transition-all duration-500 hover:border-indigo-500/30">
-        
-        <div class="text-center mb-6">
-            <div class="inline-flex items-center justify-center w-14 h-14 bg-slate-950 border border-slate-800 rounded-2xl mb-3 shadow-xl">
-                <i class="fa-solid fa-fingerprint text-xl bg-gradient-to-r from-indigo-400 to-violet-400 bg-clip-text text-transparent"></i>
-            </div>
-            <h1 class="text-2xl font-extrabold tracking-tight text-white">Access Gateway</h1>
-            <p class="text-slate-400 text-xs font-mono mt-1 uppercase tracking-wider">Sign In to CV Intellect AI</p>
-        </div>
-
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="mb-4 space-y-2">
-                    {% for message in messages %}
-                        <div class="flex items-center p-3 text-xs bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl">
-                            <i class="fa-solid fa-circle-exclamation mr-2 text-red-500"></i>
-                            <span class="font-medium">{{ message }}</span>
-                        </div>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
-
-        <form id="login-form" action="{{ url_for('login') }}" method="POST" class="space-y-4">
-            
-            <div class="space-y-1.5">
-                <label for="username" class="text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">Identity Username</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
-                        <i class="fa-solid fa-user text-sm"></i>
-                    </div>
-                    <input type="text" id="username" name="username" required autocomplete="off" placeholder="Enter username node"
-                           class="w-full pl-11 pr-4 py-3 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm text-slate-200 placeholder-slate-700">
-                </div>
-            </div>
-
-            <div class="space-y-1.5">
-                <label for="password" class="block text-[11px] font-mono font-bold text-slate-400 uppercase tracking-widest">Security Password</label>
-                <div class="relative">
-                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-500">
-                        <i class="fa-solid fa-lock text-sm"></i>
-                    </div>
-                    <input type="password" id="password" name="password" required placeholder="••••••••"
-                           class="w-full pl-11 pr-12 py-3 bg-slate-950/50 border border-slate-800 rounded-2xl focus:outline-none focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/5 transition-all text-sm text-slate-200 placeholder-slate-700">
-                    <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-4 flex items-center text-slate-500 hover:text-slate-300 focus:outline-none">
-                        <i class="fa-solid fa-eye text-sm" id="eye-icon"></i>
-                    </button>
-                </div>
-            </div>
-
-            <button type="submit" id="submit-btn"
-                    class="w-full mt-2 py-3.5 px-4 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-500 hover:to-violet-500 text-white font-semibold text-sm rounded-2xl transition-all duration-300 shadow-xl shadow-indigo-950/50 active:scale-[0.99] flex items-center justify-center space-x-2 cursor-pointer">
-                <span>Unlock Terminal Session</span>
-                <i class="fa-solid fa-right-to-bracket text-xs"></i>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="input-wrap">
+            <i class="fa-solid fa-lock input-icon"></i>
+            <input type="password" id="password" name="password" class="input-field" placeholder="••••••••" required>
+            <button type="button" class="toggle-pw" id="toggle-pw">
+              <i class="fa-solid fa-eye" id="eye-icon"></i>
             </button>
-        </form>
-
-        <div class="mt-6 text-center border-t border-slate-800/60 pt-4 text-xs text-slate-400">
-            New node identity? 
-            <a href="{{ url_for('register') }}" class="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors ml-1 underline underline-offset-4">Create Account</a>
+          </div>
         </div>
+        <button type="submit" class="btn-submit">
+          Sign In <i class="fa-solid fa-arrow-right"></i>
+        </button>
+      </form>
+
+      <div class="auth-footer">
+        Don't have an account?
+        <a href="{{ url_for('register') }}">Create one free</a>
+      </div>
     </div>
+  </div>
 
-    <script>
-        const loader = document.getElementById('loading-overlay');
-        const loginForm = document.getElementById('login-form');
-        const passwordInput = document.getElementById('password');
-        const togglePasswordBtn = document.getElementById('toggle-password');
-        const eyeIcon = document.getElementById('eye-icon');
-
-        // 1. App Initialization Loader Fadeout
-        window.addEventListener('load', () => {
-            setTimeout(() => {
-                loader.style.opacity = '0';
-                setTimeout(() => loader.style.display = 'none', 300);
-            }, 300); 
-        });
-
-        // 2. Form Submission Loader Synchronization
-        loginForm.addEventListener('submit', () => {
-            loader.style.display = 'flex';
-            loader.style.opacity = '1';
-            document.querySelector('#loading-overlay p').innerText = "Verifying Credentials Database...";
-        });
-
-        // 3. Password View Toggle
-        togglePasswordBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const isPassword = passwordInput.type === 'password';
-            passwordInput.type = isPassword ? 'text' : 'password';
-            eyeIcon.className = isPassword ? 'fa-solid fa-eye-slash text-sm' : 'fa-solid fa-eye text-sm';
-        });
-    </script>
+  <script>
+    const loader = document.getElementById('loader');
+    window.addEventListener('load', () => setTimeout(() => loader.classList.add('hidden'), 250));
+    document.getElementById('login-form').addEventListener('submit', () => {
+      loader.classList.remove('hidden');
+    });
+    const pw = document.getElementById('password');
+    const eye = document.getElementById('eye-icon');
+    document.getElementById('toggle-pw').addEventListener('click', () => {
+      const show = pw.type === 'password';
+      pw.type = show ? 'text' : 'password';
+      eye.className = show ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye';
+    });
+  </script>
 </body>
 </html>

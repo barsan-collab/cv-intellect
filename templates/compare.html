@@ -1,106 +1,349 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Candidate Comparison Matrix</title>
-    <style>
-        * { box-sizing: border-box; transition: all 0.2s ease; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #020617; margin: 0; padding: 40px 15px; color: #f8fafc; }
-        .matrix-card { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.06); backdrop-filter: blur(16px); width: 100%; max-width: 1100px; border-radius: 24px; padding: 40px; margin: 0 auto; box-shadow: 0 25px 55px rgba(0,0,0,0.6); }
-        .title-section { text-align: center; margin-bottom: 35px; }
-        .title-section h1 { margin: 0; font-size: 30px; color: #3b82f6; font-weight: 800; }
-        .table-responsive { width: 100%; overflow-x: auto; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.05); background: #090d16; }
-        table { width: 100%; border-collapse: collapse; min-width: 800px; table-layout: fixed; }
-        th, td { padding: 18px; text-align: left; vertical-align: top; border-bottom: 1px solid rgba(255,255,255,0.02); border-right: 1px solid rgba(255,255,255,0.02); }
-        th { background: #0f172a; color: #3b82f6; text-transform: uppercase; font-size: 12px; letter-spacing: 1px; font-weight: 700; }
-        .criterion-col { width: 180px; font-weight: 700; color: #94a3b8; background: rgba(15, 23, 42, 0.3); }
-        .cand-name { font-size: 18px; font-weight: 800; color: #10b981; }
-        .score-badge { font-size: 20px; font-weight: 800; color: #34d399; }
-        ul { margin: 0; padding-left: 15px; color: #cbd5e1; font-size: 13.5px; }
-        li { margin-bottom: 6px; }
-        .btn-back { display: inline-block; background: #1e293b; color: white; padding: 12px 25px; border-radius: 8px; text-decoration: none; font-weight: 600; font-size: 14px; margin-top: 25px; border: 1px solid rgba(255,255,255,0.05); }
-        .btn-back:hover { background: #334155; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare Candidates — CV Intellect</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=4">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    /* Header grid adapts to number of candidates */
+    .compare-grid {
+      display: grid;
+      grid-template-columns: 180px repeat({{ candidates|length }}, 1fr);
+      gap: 0;
+      border: 1px solid var(--c-border);
+      border-radius: var(--r-xl);
+      overflow: hidden;
+      background: rgba(15,23,42,.6);
+      backdrop-filter: blur(20px);
+      margin-bottom: 24px;
+    }
+    .cmp-col-header {
+      padding: 28px 20px;
+      border-left: 1px solid var(--c-border);
+      text-align: center; position: relative;
+    }
+    .cmp-col-header:first-child { border-left: none; }
+    .cmp-criterion {
+      padding: 20px; font-size: 12px; font-weight: 700;
+      font-family: var(--font-mono); text-transform: uppercase;
+      letter-spacing: .1em; color: var(--c-text4);
+      border-top: 1px solid var(--c-border);
+      background: rgba(2,6,23,.3);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cmp-cell {
+      padding: 20px; border-left: 1px solid var(--c-border);
+      border-top: 1px solid var(--c-border);
+      font-size: 14px; color: var(--c-text2);
+      vertical-align: top;
+    }
+    .cmp-score-big {
+      font-size: 52px; font-weight: 900; line-height: 1;
+      background: var(--g-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .cmp-candidate-avatar {
+      width: 52px; height: 52px; border-radius: 50%;
+      background: var(--g-primary); margin: 0 auto 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px; font-weight: 800; color: #fff;
+    }
+    .cmp-candidate-name  { font-size: 15px; font-weight: 700; color: var(--c-text); margin-bottom: 4px; }
+    .cmp-candidate-email { font-size: 12px; color: var(--c-text4); }
+
+    /* Winner highlight */
+    {% set max_rating = namespace(val=0) %}
+    {% for c in candidates %}{% if c.hr_rating > max_rating.val %}{% set max_rating.val = c.hr_rating %}{% endif %}{% endfor %}
+
+    /* Insight list compact */
+    .cmp-list { list-style: none; display: flex; flex-direction: column; gap: 8px; margin: 0; }
+    .cmp-list li {
+      display: flex; align-items: flex-start; gap: 8px;
+      font-size: 13px; line-height: 1.5; color: var(--c-text2); padding: 8px 10px;
+      border-radius: var(--r-sm);
+    }
+    .cmp-list.pros li { background: rgba(16,185,129,.06); }
+    .cmp-list.cons li { background: rgba(239,68,68,.06); }
+    .cmp-list.pros li i { color: #34d399; flex-shrink:0; margin-top:2px; }
+    .cmp-list.cons li i { color: #f87171; flex-shrink:0; margin-top:2px; }
+
+    /* Chart container */
+    .chart-section {
+      background: rgba(15,23,42,.6); backdrop-filter: blur(20px);
+      border: 1px solid var(--c-border); border-radius: var(--r-xl);
+      padding: 28px; margin-bottom: 24px;
+    }
+    .chart-wrap { max-width: 600px; margin: 0 auto; }
+
+    /* Score bar comparison */
+    .score-compare-row { display: flex; flex-direction: column; gap: 14px; }
+    .score-bar-item { display: grid; grid-template-columns: 140px 1fr 50px; gap: 12px; align-items: center; }
+    .score-bar-name { font-size: 13px; font-weight: 600; color: var(--c-text2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .score-bar-num  { font-size: 13px; font-weight: 700; text-align: right; font-family: var(--font-mono); }
+
+    @media (max-width: 860px) {
+      .compare-grid { grid-template-columns: 120px repeat({{ candidates|length }}, 1fr); }
+      .cmp-criterion { font-size: 10px; padding: 14px 12px; }
+      .cmp-cell       { padding: 14px 12px; }
+      .cmp-score-big  { font-size: 36px; }
+    }
+    @media (max-width: 600px) {
+      .score-bar-item { grid-template-columns: 90px 1fr 44px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="matrix-card">
-        <div class="title-section">
-            <h1>📊 Comparative Analysis Grid</h1>
-            <p style="color:#475569; margin:5px 0 0 0;">Cross-examination matrix built over unstructured candidate parameters.</p>
+  <button class="sidebar-toggle" id="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
+
+  <div class="app-shell">
+    <nav class="sidebar" id="sidebar">
+      <a href="{{ url_for('dashboard') }}" class="sidebar-logo">
+        <span class="logo-icon">🧠</span> CV Intellect
+      </a>
+      <div class="sidebar-section-title">Navigation</div>
+      <a href="{{ url_for('dashboard') }}" class="sidebar-item">
+        <i class="fa-solid fa-house"></i> Dashboard
+      </a>
+      <a href="{{ url_for('leaderboard') }}" class="sidebar-item">
+        <i class="fa-solid fa-trophy"></i> Leaderboard
+      </a>
+      <a href="#" class="sidebar-item active">
+        <i class="fa-solid fa-code-compare"></i> Compare
+      </a>
+      <div class="sidebar-divider"></div>
+      <a href="{{ url_for('logout') }}" class="sidebar-item">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-user">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="sidebar-user-avatar">{{ session.get('username','U')[0]|upper }}</div>
+          <div>
+            <div class="sidebar-user-name">{{ session.get('username') }}</div>
+            <div class="sidebar-user-role">{{ session.get('role','applicant')|title }}</div>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <main class="app-main">
+
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:28px; flex-wrap:wrap; gap:14px;">
+        <div>
+          <div class="page-title">Candidate Comparison</div>
+          <div class="page-sub">Side-by-side AI analysis of {{ candidates|length }} candidates</div>
+        </div>
+        <a href="{{ url_for('leaderboard') }}" class="btn btn-ghost">
+          <i class="fa-solid fa-arrow-left"></i> Back to Leaderboard
+        </a>
+      </div>
+
+      <!-- Score bar chart -->
+      <div class="chart-section reveal">
+        <div class="section-title" style="margin-bottom:20px;"><i class="fa-solid fa-chart-bar"></i> Score Comparison</div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:32px; align-items:center;">
+          <div class="chart-wrap">
+            <canvas id="scoreChart" height="200"></canvas>
+          </div>
+          <div class="score-compare-row">
+            {% for cand in candidates %}
+            <div class="score-bar-item">
+              <div class="score-bar-name">{{ cand.name.split(' ')[0] }}</div>
+              <div class="progress-bar" style="height:8px;">
+                <div class="progress-fill {% if cand.hr_rating >= 8 %}pf-emerald{% elif cand.hr_rating >= 5 %}pf-amber{% else %}pf-red{% endif %} bar-animate"
+                     data-width="{{ cand.hr_rating * 10 }}%"></div>
+              </div>
+              <div class="score-bar-num" style="color:{% if cand.hr_rating >= 8 %}#34d399{% elif cand.hr_rating >= 5 %}#fbbf24{% else %}#f87171{% endif %};">{{ cand.hr_rating }}/10</div>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+
+      <!-- Comparison table -->
+      <div class="compare-grid reveal">
+
+        <!-- Empty criterion column header -->
+        <div style="padding:28px 20px; background:rgba(2,6,23,.3); border-right:1px solid var(--c-border);">
+          <div style="font-family:var(--font-mono); font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--c-text4);">Criteria</div>
         </div>
 
-        <div class="table-responsive">
-            <table>
-                <thead>
-                    <tr>
-                        <th class="criterion-col">Evaluation Criteria</th>
-                        {% for cand in candidates %}
-                            <th>
-                                <div class="cand-name">{{ cand.name }}</div>
-                                <div style="font-size:12px; color:#475569; font-weight:normal; margin-top:2px;">{{ cand.email }}</div>
-                            </th>
-                        {% endfor %}
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="criterion-col">AI Recruiter Score</td>
-                        {% for cand in candidates %}
-                            <td><span class="score-badge">{{ cand.hr_rating }}%</span></td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td class="criterion-col">Domain Summary</td>
-                        {% for cand in candidates %}
-                            <td style="font-size:14px; color:#cbd5e1; line-height:1.5;">{{ cand.summary }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td class="criterion-col">Project Architecture Depth</td>
-                        {% for cand in candidates %}
-                            <td style="font-size:13.5px; color:#94a3b8; font-style:italic; line-height:1.5;">{{ cand.project_depth_critique }}</td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td class="criterion-col">Extracted Tech Stack</td>
-                        {% for cand in candidates %}
-                            <td>
-                                <div style="display:flex; flex-wrap:wrap; gap:5px;">
-                                    {% for sk in cand.skills %}
-                                        <span style="background:rgba(59,130,246,0.1); color:#60a5fa; border:1px solid rgba(59,130,246,0.15); font-size:12px; padding:3px 8px; border-radius:4px;">{{ sk }}</span>
-                                    {% endfor %}
-                                </div>
-                            </td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td class="criterion-col">Crucial Missing Elements</td>
-                        {% for cand in candidates %}
-                            <td>
-                                <ul>
-                                    {% for mi in cand.missing_info %}<li style="color:#f87171;">{{ mi }}</li>{% endfor %}
-                                </ul>
-                            </td>
-                        {% endfor %}
-                    </tr>
-                    <tr>
-                        <td class="criterion-col">Upskilling Roadmap Steps</td>
-                        {% for cand in candidates %}
-                            <td>
-                                <ol style="margin:0; padding-left:15px; font-size:13px; color:#e2e8f0;">
-                                    {% for step in cand.skill_gap_roadmap %}<li>{{ step }}</li>{% endfor %}
-                                </ol>
-                            </td>
-                        {% endfor %}
-                    </tr>
-                </tbody>
-            </table>
+        <!-- Candidate headers -->
+        {% for cand in candidates %}
+        <div class="cmp-col-header {% if cand.hr_rating == max_rating.val %}card-elevated{% endif %}">
+          {% if cand.hr_rating == max_rating.val %}
+          <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#fbbf24,#f59e0b);"></div>
+          {% endif %}
+          <div class="cmp-candidate-avatar" style="{% if cand.hr_rating == max_rating.val %}background:linear-gradient(135deg,#fbbf24,#f59e0b);{% endif %}">
+            {{ cand.name[0]|upper }}
+          </div>
+          {% if cand.hr_rating == max_rating.val %}
+          <div style="font-size:11px; color:#fbbf24; font-weight:700; font-family:var(--font-mono); margin-bottom:6px;">👑 TOP PICK</div>
+          {% endif %}
+          <div class="cmp-candidate-name truncate">{{ cand.name }}</div>
+          <div class="cmp-candidate-email truncate">{{ cand.email }}</div>
         </div>
+        {% endfor %}
 
-        <div style="text-align: center;">
-            <a href="/leaderboard" class="btn-back">⬅ Back to Leaderboard Pool</a>
+        <!-- AI Score row -->
+        <div class="cmp-criterion"><i class="fa-solid fa-star"></i> AI Score</div>
+        {% for cand in candidates %}
+        <div class="cmp-cell" style="text-align:center;">
+          <div class="cmp-score-big" style="{% if cand.hr_rating >= 8 %}-webkit-text-fill-color:#34d399;color:#34d399;{% elif cand.hr_rating >= 5 %}-webkit-text-fill-color:#fbbf24;color:#fbbf24;{% else %}-webkit-text-fill-color:#f87171;color:#f87171;{% endif %}background:none;">{{ cand.hr_rating }}</div>
+          <div style="font-family:var(--font-mono); font-size:11px; color:var(--c-text4);">OUT OF 10</div>
+          <div style="margin-top:10px;">
+            <span class="badge {% if cand.hr_rating >= 8 %}badge-success{% elif cand.hr_rating >= 5 %}badge-warning{% else %}badge-danger{% endif %}">
+              {% if cand.hr_rating >= 8 %}Excellent{% elif cand.hr_rating >= 5 %}Average{% else %}Below Avg{% endif %}
+            </span>
+          </div>
         </div>
-    </div>
+        {% endfor %}
+
+        <!-- AI Verdict row -->
+        <div class="cmp-criterion"><i class="fa-solid fa-robot"></i> AI Verdict</div>
+        {% for cand in candidates %}
+        <div class="cmp-cell" style="font-size:13px; color:var(--c-text3); line-height:1.6;">
+          {{ cand.hr_verdict[:200] }}{% if cand.hr_verdict and cand.hr_verdict|length > 200 %}…{% endif %}
+        </div>
+        {% endfor %}
+
+        <!-- Strengths row -->
+        <div class="cmp-criterion"><i class="fa-solid fa-check-circle" style="color:#34d399;"></i> Strengths</div>
+        {% for cand in candidates %}
+        <div class="cmp-cell">
+          {% if cand.pros_list %}
+          <ul class="cmp-list pros">
+            {% for pro in cand.pros_list %}
+            <li><i class="fa-solid fa-check"></i> {{ pro }}</li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <span style="color:var(--c-text4); font-size:13px;">None extracted</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <!-- Weaknesses row -->
+        <div class="cmp-criterion"><i class="fa-solid fa-triangle-exclamation" style="color:#f87171;"></i> Weaknesses</div>
+        {% for cand in candidates %}
+        <div class="cmp-cell">
+          {% if cand.cons_list %}
+          <ul class="cmp-list cons">
+            {% for con in cand.cons_list %}
+            <li><i class="fa-solid fa-xmark"></i> {{ con }}</li>
+            {% endfor %}
+          </ul>
+          {% else %}
+          <span style="color:var(--c-text4); font-size:13px;">None found</span>
+          {% endif %}
+        </div>
+        {% endfor %}
+
+        <!-- Contact row -->
+        <div class="cmp-criterion"><i class="fa-solid fa-address-card"></i> Contact</div>
+        {% for cand in candidates %}
+        <div class="cmp-cell">
+          <div style="font-size:13px; color:var(--c-text3); margin-bottom:4px;">
+            <i class="fa-solid fa-envelope" style="color:var(--c-indigo); width:16px;"></i> {{ cand.email }}
+          </div>
+          <div style="font-size:13px; color:var(--c-text3);">
+            <i class="fa-solid fa-phone" style="color:var(--c-indigo); width:16px;"></i> {{ cand.phone or '—' }}
+          </div>
+        </div>
+        {% endfor %}
+
+        <!-- Full report row -->
+        <div class="cmp-criterion"><i class="fa-solid fa-arrow-up-right-from-square"></i> Full Report</div>
+        {% for cand in candidates %}
+        <div class="cmp-cell" style="text-align:center;">
+          <a href="{{ url_for('view_results', analysis_id=cand.id) }}" class="btn btn-primary" style="font-size:13px; padding:9px 16px;">
+            <i class="fa-solid fa-eye"></i> View
+          </a>
+        </div>
+        {% endfor %}
+
+      </div><!-- /compare-grid -->
+
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:24px;">
+        <a href="{{ url_for('leaderboard') }}" class="btn btn-ghost">
+          <i class="fa-solid fa-arrow-left"></i> Back to Leaderboard
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-ghost">
+          <i class="fa-solid fa-house"></i> Dashboard
+        </a>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    /* Sidebar */
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+    document.addEventListener('click', e => {
+      if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) sidebar.classList.remove('open');
+    });
+
+    /* Bar chart */
+    const names  = [{% for c in candidates %}"{{ c.name.split(' ')[0] }}"{% if not loop.last %},{% endif %}{% endfor %}];
+    const scores = [{% for c in candidates %}{{ c.hr_rating }}{% if not loop.last %},{% endif %}{% endfor %}];
+    const colors = scores.map(s => s >= 8 ? 'rgba(16,185,129,.85)' : s >= 5 ? 'rgba(245,158,11,.85)' : 'rgba(239,68,68,.85)');
+
+    new Chart(document.getElementById('scoreChart'), {
+      type: 'bar',
+      data: {
+        labels: names,
+        datasets: [{
+          label: 'AI Score',
+          data: scores,
+          backgroundColor: colors,
+          borderRadius: 8,
+          borderSkipped: false,
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          y: {
+            min: 0, max: 10,
+            ticks: { color: '#475569', stepSize: 2 },
+            grid:  { color: 'rgba(255,255,255,.05)' },
+          },
+          x: {
+            ticks: { color: '#94a3b8' },
+            grid:  { color: 'transparent' },
+          }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` Score: ${ctx.raw}/10`
+            }
+          }
+        },
+        animation: { duration: 1000, easing: 'easeOutQuart' }
+      }
+    });
+
+    /* Progress bars animate */
+    const barObs = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const bar = e.target;
+          setTimeout(() => { bar.style.width = bar.dataset.width; }, 200);
+          barObs.unobserve(bar);
+        }
+      });
+    }, { threshold: 0.2 });
+    document.querySelectorAll('.bar-animate').forEach(el => barObs.observe(el));
+
+    /* Reveal */
+    const revObs = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }), { threshold: 0.06 });
+    document.querySelectorAll('.reveal').forEach(el => revObs.observe(el));
+  </script>
 </body>
 </html>

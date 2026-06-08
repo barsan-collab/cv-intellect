@@ -1,101 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Talent Pool Matrix</title>
-    <style>
-        * { box-sizing: border-box; transition: all 0.25s ease; }
-        body { font-family: 'Segoe UI', system-ui, sans-serif; background: #020617; margin: 0; padding: 40px 15px; color: #f8fafc; }
-        .leaderboard-card { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.06); backdrop-filter: blur(16px); width: 100%; max-width: 950px; border-radius: 24px; padding: 40px; margin: 0 auto; box-shadow: 0 25px 55px rgba(0,0,0,0.6); }
-        .title-section { text-align: center; margin-bottom: 35px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); padding-bottom: 20px; }
-        .title-section h1 { margin: 0; font-size: 32px; background: linear-gradient(to right, #10b981, #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 800; }
-        .table-responsive { width: 100%; overflow-x: auto; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.04); background: #090d16; margin-bottom: 25px; }
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        th { background: #0f172a; padding: 16px; color: #10b981; font-weight: 700; text-transform: uppercase; font-size: 12px; }
-        td { padding: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.02); color: #cbd5e1; }
-        tr:hover td { background: rgba(16, 185, 129, 0.02); }
-        .rank-badge { width: 30px; height: 30px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 800; background: #1e293b; color: #94a3b8; font-size: 13px; }
-        .rank-1 { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
-        .score-pill { font-weight: 700; color: #34d399; background: rgba(16, 185, 129, 0.1); padding: 4px 10px; border-radius: 6px; }
-        .btn-view { background: rgba(255,255,255,0.05); color: #fff; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; border: 1px solid rgba(255,255,255,0.1); }
-        .btn-view:hover { background: #10b981; color:#020617; border-color:#10b981; }
-        .btn-compare-submit { background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 15px 30px; font-size: 15px; font-weight: 700; border: none; border-radius: 10px; cursor: pointer; display: block; width: 100%; box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3); }
-        .btn-compare-submit:hover { transform: translateY(-1px); filter: brightness(1.1); }
-        .alert-box { background: rgba(239, 68, 68, 0.15); border-left: 4px solid #ef4444; color: #fca5a5; padding: 12px; border-radius: 6px; margin-bottom: 20px; font-size: 14px; }
-        .custom-checkbox { width: 18px; height: 18px; cursor: pointer; accent-color: #10b981; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Talent Leaderboard — CV Intellect</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=4">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    /* Podium */
+    .podium-section { margin-bottom: 32px; }
+    .podium-grid { display: grid; grid-template-columns: 1fr 1.15fr 1fr; gap: 14px; align-items: end; }
+    .podium-card {
+      background: rgba(28,28,30,.72);
+      -webkit-backdrop-filter: blur(40px) saturate(180%);
+      backdrop-filter: blur(40px) saturate(180%);
+      border: 1px solid var(--c-border); border-radius: var(--r-xl);
+      padding: 24px 20px; text-align: center;
+      transition: var(--t-base); position: relative; overflow: hidden;
+    }
+    .podium-card:hover { transform: translateY(-3px); border-color: var(--c-border-2); }
+    .podium-card.rank-1 {
+      border-color: rgba(250,204,21,.25);
+      background: linear-gradient(180deg, rgba(250,204,21,.06) 0%, rgba(15,23,42,.7) 100%);
+    }
+    .podium-card.rank-1::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg,#fbbf24,#f59e0b);
+    }
+    .podium-card.rank-2::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg,#cbd5e1,#94a3b8);
+    }
+    .podium-card.rank-3::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+      background: linear-gradient(90deg,#fb923c,#f97316);
+    }
+
+    .podium-crown { font-size: 28px; margin-bottom: 8px; display: block; }
+    .podium-avatar {
+      width: 56px; height: 56px; border-radius: 50%; margin: 0 auto 14px;
+      background: var(--g-primary); display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 800; color: #fff;
+    }
+    .podium-card.rank-1 .podium-avatar { width: 64px; height: 64px; font-size: 26px; box-shadow: 0 0 30px rgba(250,204,21,.25); }
+    .podium-name  { font-size: 15px; font-weight: 700; color: var(--c-text); margin-bottom: 4px; }
+    .podium-email { font-size: 12px; color: var(--c-text4); margin-bottom: 12px; }
+    .podium-score {
+      font-size: 32px; font-weight: 900; line-height: 1;
+      background: var(--g-text); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .podium-card.rank-1 .podium-score { font-size: 40px; }
+    .podium-score-label { font-family: var(--font-mono); font-size: 10px; color: var(--c-text4); margin-top: 2px; }
+
+    /* Table section */
+    .leaderboard-toolbar {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: 14px; flex-wrap: wrap; margin-bottom: 18px;
+    }
+
+    /* Compare checkboxes */
+    .compare-checkbox {
+      width: 18px; height: 18px; cursor: pointer;
+      accent-color: var(--c-indigo);
+    }
+    .compare-bar {
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(15,23,42,.95); backdrop-filter: blur(20px);
+      border-top: 1px solid var(--c-border);
+      padding: 16px 32px;
+      display: none; align-items: center; justify-content: space-between;
+      gap: 16px; flex-wrap: wrap;
+    }
+    .compare-bar.show { display: flex; animation: fadeUp .3s ease; }
+    .compare-bar-info { display: flex; align-items: center; gap: 10px; }
+    .compare-count {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: var(--g-primary); color: #fff;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 800;
+    }
+    .compare-bar-text { font-size: 14px; color: var(--c-text2); font-weight: 500; }
+
+    /* Score ring mini */
+    .score-ring {
+      display: flex; align-items: center; gap: 8px;
+    }
+    .ring-svg { transform: rotate(-90deg); }
+
+    /* Tag skills */
+    .skill-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+
+    @media (max-width: 860px) {
+      .podium-grid { grid-template-columns: 1fr 1fr; }
+      .podium-card:first-child { grid-column: 1 / -1; order: -1; }
+    }
+    @media (max-width: 600px) {
+      .podium-grid { grid-template-columns: 1fr; }
+      .compare-bar { padding: 14px 16px; }
+    }
+  </style>
 </head>
 <body>
-    <div class="leaderboard-card">
-        <div class="title-section">
-            <h1>🏆 Local Talent Pool Metrics</h1>
-            <p style="color:#475569; margin:5px 0 0 0;">Select multiple candidates below using checkboxes to trigger side-by-side comparative diagnostics.</p>
+  <button class="sidebar-toggle" id="sidebar-toggle"><i class="fa-solid fa-bars"></i></button>
+
+  <div class="app-shell">
+    <nav class="sidebar" id="sidebar">
+      <a href="{{ url_for('dashboard') }}" class="sidebar-logo">
+        <span class="logo-icon">🧠</span> CV Intellect
+      </a>
+      <div class="sidebar-section-title">Navigation</div>
+      <a href="{{ url_for('dashboard') }}" class="sidebar-item">
+        <i class="fa-solid fa-house"></i> Dashboard
+      </a>
+      <a href="{{ url_for('leaderboard') }}" class="sidebar-item active">
+        <i class="fa-solid fa-trophy"></i> Leaderboard
+      </a>
+      <a href="{{ url_for('results_default') }}" class="sidebar-item">
+        <i class="fa-solid fa-chart-bar"></i> Latest Result
+      </a>
+      <div class="sidebar-divider"></div>
+      <a href="{{ url_for('logout') }}" class="sidebar-item">
+        <i class="fa-solid fa-right-from-bracket"></i> Logout
+      </a>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-user">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="sidebar-user-avatar">{{ session.get('username','U')[0]|upper }}</div>
+          <div>
+            <div class="sidebar-user-name">{{ session.get('username') }}</div>
+            <div class="sidebar-user-role">{{ session.get('role','applicant')|title }}</div>
+          </div>
         </div>
+      </div>
+    </nav>
 
-        {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                    <div class="alert-box">⚠️ {{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+    <main class="app-main" style="padding-bottom: 100px;">
 
-        <form action="/compare" method="POST">
-            <div class="table-responsive">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="width: 50px; text-align: center;">Select</th>
-                            <th style="width: 60px;">Rank</th>
-                            <th>Candidate Ecosystem</th>
-                            <th>Top Core Focus Skills</th>
-                            <th>AI Score</th>
-                            <th style="text-align: center;">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% if leaderboard %}
-                            {% for app in leaderboard %}
-                                <tr>
-                                    <td style="text-align: center;">
-                                        <input type="checkbox" name="compare_ids" value="{{ app.id }}" class="custom-checkbox">
-                                    </td>
-                                    <td>
-                                        <div class="rank-badge {% if app.rank == 1 %}rank-1{% endif %}">{{ app.rank }}</div>
-                                    </td>
-                                    <td>
-                                        <div style="font-weight:700; color:#fff;">{{ app.name }}</div>
-                                        <div style="font-size:12px; color:#475569;">{{ app.email }}</div>
-                                    </td>
-                                    <td>
-                                        <div style="display:flex; flex-wrap:wrap; gap:4px;">
-                                            {% for sk in app.skills %}
-                                                <span style="background:#1e293b; color:#94a3b8; font-size:11px; padding:2px 6px; border-radius:4px;">{{ sk }}</span>
-                                            {% endfor %}
-                                        </div>
-                                    </td>
-                                    <td><span class="score-pill">{{ app.hr_rating }}%</span></td>
-                                    <td style="text-align: center;">
-                                        <a href="/results/{{ app.id }}" class="btn-view">View Analysis</a>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        {% else %}
-                            <tr>
-                                <td colspan="6" style="text-align: center; color: #475569; padding: 40px 0;">No profiles parsed in database yet.</td>
-                            </tr>
-                        {% endif %}
-                    </tbody>
-                </table>
+      {% with messages = get_flashed_messages() %}
+        {% if messages %}{% for msg in messages %}
+          <div class="flash-msg"><i class="fa-solid fa-circle-exclamation"></i> {{ msg }}</div>
+        {% endfor %}{% endif %}
+      {% endwith %}
+
+      <div class="page-header">
+        <h1 class="page-title">Talent Leaderboard</h1>
+        <p class="page-sub">All candidates ranked by AI score. Select 2–4 to compare side-by-side.</p>
+      </div>
+
+      {% if leaderboard %}
+
+      <!-- Top 3 Podium -->
+      {% if leaderboard | length >= 3 %}
+      <div class="podium-section">
+        <div class="section-title" style="margin-bottom:16px;"><i class="fa-solid fa-medal"></i> Top Performers</div>
+        <div class="podium-grid">
+          <!-- Rank 2 -->
+          <div class="podium-card rank-2 reveal reveal-d1">
+            <div class="podium-avatar" style="background:linear-gradient(135deg,#94a3b8,#64748b);">{{ leaderboard[1].name[0]|upper }}</div>
+            <div style="font-size:20px; color:#cbd5e1; font-weight:800; margin-bottom:8px;">🥈</div>
+            <div class="podium-name truncate">{{ leaderboard[1].name }}</div>
+            <div class="podium-email truncate">{{ leaderboard[1].email }}</div>
+            <div class="podium-score">{{ leaderboard[1].hr_rating }}</div>
+            <div class="podium-score-label">/ 10 AI Score</div>
+          </div>
+          <!-- Rank 1 -->
+          <div class="podium-card rank-1 reveal">
+            <span class="podium-crown">👑</span>
+            <div class="podium-avatar">{{ leaderboard[0].name[0]|upper }}</div>
+            <div class="podium-name truncate">{{ leaderboard[0].name }}</div>
+            <div class="podium-email truncate">{{ leaderboard[0].email }}</div>
+            <div class="podium-score">{{ leaderboard[0].hr_rating }}</div>
+            <div class="podium-score-label">/ 10 AI Score</div>
+            <div style="margin-top:14px;">
+              <a href="{{ url_for('view_results', analysis_id=leaderboard[0].id) }}" class="btn btn-primary" style="font-size:13px; padding:8px 16px;">
+                <i class="fa-solid fa-eye"></i> View Report
+              </a>
             </div>
-
-            <button type="submit" class="btn-compare-submit">📊 Execute Side-by-Side Candidate Comparison Matrix</button>
-        </form>
-
-        <div style="text-align: center; margin-top: 25px;">
-            <a href="/" style="color: #475569; text-decoration: none; font-weight: 600; font-size: 14px;">⬅ Back to Parse Core</a>
+          </div>
+          <!-- Rank 3 -->
+          <div class="podium-card rank-3 reveal reveal-d2">
+            <div class="podium-avatar" style="background:linear-gradient(135deg,#fb923c,#f97316);">{{ leaderboard[2].name[0]|upper }}</div>
+            <div style="font-size:20px; color:#fdba74; font-weight:800; margin-bottom:8px;">🥉</div>
+            <div class="podium-name truncate">{{ leaderboard[2].name }}</div>
+            <div class="podium-email truncate">{{ leaderboard[2].email }}</div>
+            <div class="podium-score">{{ leaderboard[2].hr_rating }}</div>
+            <div class="podium-score-label">/ 10 AI Score</div>
+          </div>
         </div>
+      </div>
+      {% endif %}
+
+      <!-- Full Table -->
+      <div class="card reveal">
+        <form id="compare-form" action="{{ url_for('compare') }}" method="POST">
+          <div class="leaderboard-toolbar">
+            <div class="section-title">
+              <i class="fa-solid fa-list-ol"></i> All Candidates
+              <span class="badge badge-neutral" style="margin-left:8px;">{{ leaderboard|length }}</span>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+              <div class="search-wrap" style="width:200px;">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="search-input" class="search-input" placeholder="Search...">
+              </div>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data-table" id="lb-table">
+              <thead>
+                <tr>
+                  <th style="width:44px; text-align:center;">
+                    <i class="fa-solid fa-code-compare" style="color:var(--c-indigo);"></i>
+                  </th>
+                  <th style="width:60px;">Rank</th>
+                  <th>Candidate</th>
+                  <th>AI Score</th>
+                  <th>Key Strengths</th>
+                  <th style="text-align:right;">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for app in leaderboard %}
+                <tr data-name="{{ app.name|lower }}">
+                  <td style="text-align:center;">
+                    <input type="checkbox" name="compare_ids" value="{{ app.id }}" class="compare-checkbox check-box" onchange="updateCompareBar()">
+                  </td>
+                  <td>
+                    <div class="rank-badge {% if app.rank == 1 %}r1{% elif app.rank == 2 %}r2{% elif app.rank == 3 %}r3{% endif %}">
+                      {% if app.rank == 1 %}👑{% elif app.rank == 2 %}🥈{% elif app.rank == 3 %}🥉{% else %}{{ app.rank }}{% endif %}
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                      <div style="width:36px;height:36px;border-radius:50%;background:var(--g-primary);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#fff;flex-shrink:0;">
+                        {{ app.name[0]|upper }}
+                      </div>
+                      <div>
+                        <div style="font-weight:600; color:var(--c-text);" class="truncate" style="max-width:140px;">{{ app.name }}</div>
+                        <div style="font-size:12px; color:var(--c-text4);">{{ app.email }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                      <span class="badge {% if app.hr_rating >= 8 %}badge-success{% elif app.hr_rating >= 5 %}badge-warning{% else %}badge-danger{% endif %}">
+                        {{ app.hr_rating }}/10
+                      </span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="skill-tags">
+                      {% for sk in app.skills %}
+                      <span class="tag" style="font-size:11px; padding:2px 8px;">{{ sk[:30] }}{% if sk|length > 30 %}…{% endif %}</span>
+                      {% else %}
+                      <span style="font-size:12px; color:var(--c-text4);">—</span>
+                      {% endfor %}
+                    </div>
+                  </td>
+                  <td style="text-align:right;">
+                    <a href="{{ url_for('view_results', analysis_id=app.id) }}" class="btn btn-ghost" style="padding:7px 14px; font-size:13px;">
+                      <i class="fa-solid fa-arrow-right"></i> Report
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </form>
+      </div>
+
+      {% else %}
+      <!-- Empty state -->
+      <div class="card">
+        <div class="empty-state" style="padding:80px 24px;">
+          <i class="fa-solid fa-users"></i>
+          <p style="font-size:16px; font-weight:600; color:var(--c-text3); margin-bottom:8px;">No candidates yet</p>
+          <p>Upload resumes from the dashboard to start building your talent leaderboard.</p>
+          <a href="{{ url_for('dashboard') }}" class="btn btn-primary" style="margin-top:20px;">
+            <i class="fa-solid fa-arrow-left"></i> Go to Dashboard
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+    </main>
+  </div>
+
+  <!-- Compare floating bar -->
+  <div class="compare-bar" id="compare-bar">
+    <div class="compare-bar-info">
+      <div class="compare-count" id="compare-count">0</div>
+      <div class="compare-bar-text"><span id="compare-count-text">0</span> candidate(s) selected for comparison</div>
     </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+      <button type="button" onclick="clearCompare()" class="btn btn-ghost" style="font-size:13px; padding:9px 16px;">
+        <i class="fa-solid fa-xmark"></i> Clear
+      </button>
+      <button type="button" onclick="submitCompare()" id="compare-submit" class="btn btn-primary" style="font-size:13px; padding:9px 18px;" disabled>
+        <i class="fa-solid fa-code-compare"></i> Compare Selected
+      </button>
+    </div>
+  </div>
+
+  <script>
+    /* Sidebar */
+    const sidebar = document.getElementById('sidebar');
+    const sidebarToggle = document.getElementById('sidebar-toggle');
+    sidebarToggle.addEventListener('click', () => sidebar.classList.toggle('open'));
+    document.addEventListener('click', e => {
+      if (!sidebar.contains(e.target) && !sidebarToggle.contains(e.target)) sidebar.classList.remove('open');
+    });
+
+    /* Compare logic */
+    const compareBar    = document.getElementById('compare-bar');
+    const compareCount  = document.getElementById('compare-count');
+    const compareCountText = document.getElementById('compare-count-text');
+    const compareSubmit = document.getElementById('compare-submit');
+
+    function updateCompareBar() {
+      const checked = document.querySelectorAll('.compare-checkbox:checked').length;
+      compareCount.textContent = checked;
+      compareCountText.textContent = checked;
+      if (checked > 0) {
+        compareBar.classList.add('show');
+        compareSubmit.disabled = checked < 2;
+        compareSubmit.style.opacity = checked < 2 ? '.5' : '1';
+      } else {
+        compareBar.classList.remove('show');
+      }
+    }
+
+    function clearCompare() {
+      document.querySelectorAll('.compare-checkbox').forEach(cb => cb.checked = false);
+      compareBar.classList.remove('show');
+    }
+
+    function submitCompare() {
+      document.getElementById('compare-form').submit();
+    }
+
+    /* Search */
+    document.getElementById('search-input').addEventListener('input', function() {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('#lb-table tbody tr[data-name]').forEach(row => {
+        row.style.display = row.dataset.name.includes(q) ? '' : 'none';
+      });
+    });
+
+    /* Reveal */
+    const obs = new IntersectionObserver(e => e.forEach(en => { if (en.isIntersecting) en.target.classList.add('visible'); }), { threshold: 0.06 });
+    document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+  </script>
 </body>
 </html>

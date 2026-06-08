@@ -1,7 +1,12 @@
 __pycache__/
-*.__pyc
+*.pyc
+*.pyo
 instance/
 .env
 .venv/
 env/
 uploads/*
+!uploads/.gitkeep
+resources/*
+!resources/.gitkeep
+.tunnel.pid
