@@ -10,3 +10,6 @@ uploads/*
 resources/*
 !resources/.gitkeep
 .tunnel.pid
+start.ps1
+stop.ps1
+design.md
